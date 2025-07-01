@@ -2,7 +2,7 @@ import requests
 import datetime
 import json
 import openpyxl
-import smtplib
+#import smtplib
 import os
 from dotenv import load_dotenv 
 
@@ -238,10 +238,10 @@ NVD Link: {CVE_url}
         text_body.insert(0, header)
 
     # Send message alert
-    #send_teams_alert(
-     #   message_body="".join(text_body),
-      #  webhook_url=os.getenv("TEAMS_WEBHOOK")
-    #)
+    send_teams_alert(
+        message_body="".join(text_body),
+        webhook_url=os.getenv("TEAMS_WEBHOOK")
+    )
 
 
 if __name__ == "__main__":
