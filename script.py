@@ -9,31 +9,6 @@ from dotenv import load_dotenv
 load_dotenv() 
 lookback_days = 1 # this is the number of days you would like to look back
 SEEN_CVES_FILE = "seen_cves.json"
-
-def send_teams_alert(message_body, webhook_url):
-    payload = {
-        "@type": "MessageCard",
-        "@context": "http://schema.org/extensions",
-        "summary": "CVE Alert",
-        "themeColor": "0076D7",
-        "title": " CVE Notification",
-        "text": message_body.replace("\n", "<br>")
-    }
-
-    try:
-        response = requests.post(
-            webhook_url,
-            data=json.dumps(payload),
-            headers={"Content-Type": "application/json"}
-        )
-        if response.status_code == 200:
-            print("Teams alert sent successfully.")
-        else:
-            print(f"Failed to send Teams alert. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Exception while sending Teams alert: {e}")
-
-
 Vendor_list = []
 
 def Get_vendors():
@@ -47,7 +22,6 @@ def Get_vendors():
         for col in dataframe1.iter_cols(1, dataframe1.max_column):
             Vendor_list.append(col[row].value)
     return Vendor_list
-
 
 def get_cvss_metrics(metrics):
     cvss_data = None
@@ -99,6 +73,34 @@ def cve_mentions_vendor(cve_entry):
     mentioned_vendors = [vendor for vendor in vendors_list if vendor.lower() in combined_text_lower]
     
     return bool(mentioned_vendors)
+
+def send_teams_alert(message_body, webhook_url):
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "summary": "CVE Alert",
+        "themeColor": "0076D7",
+        "title": " CVE Notification",
+        "text": message_body.replace("\n", "<br>"),
+        "sections": [
+            {
+                "text": "![funny gif](https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHB4a3dldHdwbTJreXVwNDh2OWJiaW5mMmNya3J1cXo5dzl3YTBnYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kFgzrTt798d2w/giphy.gif)"
+            }
+        ]
+    }
+
+    try:
+        response = requests.post(
+            webhook_url,
+            data=json.dumps(payload),
+            headers={"Content-Type": "application/json"}
+        )
+        if response.status_code == 200:
+            print("Teams alert sent successfully.")
+        else:
+            print(f"Failed to send Teams alert. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Exception while sending Teams alert: {e}")
 
 
 def fetch_recent_critical_cves_from_history():
@@ -176,7 +178,7 @@ def main():
         cve_id = cve_data["id"]
 
         if cve_id in seen_cves:
-            continue  # Skip already processed
+            continue  # Skip cve already processed
 
 
         metrics = cve_data["metrics"]
